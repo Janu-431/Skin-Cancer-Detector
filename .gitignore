@@ -5,3 +5,4 @@ dataset/
 .vscode/
 .env
 venv/
+HAM10000_dataset.xlsx
