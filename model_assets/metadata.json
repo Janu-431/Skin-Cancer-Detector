@@ -1,0 +1,32 @@
+{
+    "classes": [
+        "Actinic Keratosis / Bowen",
+        "Basal Cell Carcinoma",
+        "Dermatofibroma",
+        "Melanocytic Nevi",
+        "Melanoma"
+    ],
+    "label_to_idx": {
+        "Actinic Keratosis / Bowen": 0,
+        "Basal Cell Carcinoma": 1,
+        "Dermatofibroma": 2,
+        "Melanocytic Nevi": 3,
+        "Melanoma": 4
+    },
+    "cancer_mapping": {
+        "Actinic Keratosis / Bowen": false,
+        "Basal Cell Carcinoma": true,
+        "Dermatofibroma": false,
+        "Melanocytic Nevi": false,
+        "Melanoma": true
+    },
+    "rf_accuracy": 0.86,
+    "rf_precision": 0.85,
+    "rf_recall": 0.86,
+    "rf_f1": 0.8533333333333333,
+    "cnn_trained": false,
+    "cnn_accuracy": 0.0,
+    "cnn_precision": 0.0,
+    "cnn_recall": 0.0,
+    "cnn_f1": 0.0
+}
