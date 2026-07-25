@@ -21,14 +21,10 @@ A machine learning web application for classifying skin lesion images using the 
 ## Screenshots
 
 ### Home Page
-![Home](images/homepage.png)
 
 ### Upload Image
-![Upload](images/upload.png)
 
 ### Prediction Result
-![Prediction](images/predictionresult.png)
 
 ### Grad-CAM Visualization
-![GradCAM](imagess/gradcam.png)
 
