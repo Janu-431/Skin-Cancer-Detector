@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skin Cancer Detection Using Machine Learning</title>
+    <meta name="description" content="Random Forest Based Intelligent Skin Lesion Analysis application with OpenCV validation and classical feature extraction.">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Background Gradient and Glow Effects -->
+    <div class="glow-bg">
+        <div class="glow-sphere sphere-1"></div>
+        <div class="glow-sphere sphere-2"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="app-header glass-panel">
+            <div class="header-logo">
+                <i class="fa-solid fa-microscope medical-icon-main"></i>
+                <div>
+                    <h1>Skin Cancer Detection Using Machine Learning</h1>
+                    <p class="subtitle">Random Forest Based Intelligent Skin Lesion Analysis</p>
+                </div>
+            </div>
+            <div class="header-badge">
+                <span class="badge-tag"><i class="fa-solid fa-shield-halved"></i> Clinical Assistant V1.0</span>
+            </div>
+        </header>
+
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- DIAGNOSTIC DASHBOARD -->
+                <div class="dashboard-grid">
+                    <!-- Left Panel: Input Control Center -->
+                    <div class="glass-panel panel-left 3d-card">
+                        <div class="panel-header">
+                            <h2><i class="fa-solid fa-camera-rotate"></i> Lesion Input Center</h2>
+                            <p>Select input mode and upload or capture skin lesion image</p>
+                        </div>
+
+                        <!-- Input Selector Tabs -->
+                        <div class="input-toggle">
+                            <button class="toggle-btn active" id="btn-upload" onclick="setInputMode('upload')">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> File Upload
+                            </button>
+                            <button class="toggle-btn" id="btn-webcam" onclick="setInputMode('webcam')">
+                                <i class="fa-solid fa-video"></i> Live Camera
+                            </button>
+                        </div>
+
+                        <!-- Upload Area -->
+                        <div id="upload-container" class="input-container active">
+                            <div class="upload-zone" id="drop-zone">
+                                <input type="file" id="file-input" accept="image/*" hidden>
+                                <i class="fa-solid fa-images upload-icon"></i>
+                                <h3>Drag & Drop Image Here</h3>
+                                <p>or click to browse local files (JPG, PNG, BMP)</p>
+                                <span class="file-limit">Optimized for high-resolution macro lesion photos</span>
+                            </div>
+                        </div>
+
+                        <!-- Webcam Area -->
+                        <div id="webcam-container" class="input-container">
+                            <div class="webcam-box">
+                                <video id="webcam-feed" autoplay playsinline muted></video>
+                                <canvas id="webcam-canvas" style="display:none;"></canvas>
+                                <div class="webcam-overlay">
+                                    <div class="scan-line"></div>
+                                    <div class="reticle"></div>
+                                </div>
+                                <div class="webcam-status-overlay" id="webcam-msg">
+                                    <i class="fa-solid fa-circle-notch fa-spin"></i> Initializing Camera Feed...
+                                </div>
+                            </div>
+                            <div class="webcam-controls">
+                                <button class="btn btn-secondary" id="btn-toggle-cam" onclick="toggleWebcam()">
+                                    <i class="fa-solid fa-power-off"></i> Start Camera
+                                </button>
+                                <button class="btn btn-primary" id="btn-capture" onclick="captureAndPredict()" disabled>
+                                    <i class="fa-solid fa-expand"></i> Capture & Analyze
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Preview Zone -->
+                        <div class="preview-wrapper" id="preview-wrapper" style="display:none;">
+                            <h4>Selected Lesion Preview</h4>
+                            <div class="preview-box">
+                                <img id="image-preview" src="" alt="Lesion Preview">
+                                <button class="clear-btn" onclick="clearPreview()"><i class="fa-solid fa-circle-xmark"></i></button>
+                            </div>
+                            <button class="btn btn-primary btn-full-width" id="btn-analyze" onclick="uploadAndPredict()">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i> Analyze Skin Lesion
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Results Dashboard -->
+                    <div class="glass-panel panel-right">
+                        <div class="panel-header">
+                            <h2><i class="fa-solid fa-heart-pulse"></i> Diagnostic Assessment</h2>
+                            <p>Real-time ML analysis and classifier outputs</p>
+                        </div>
+
+                        <!-- Before analysis placeholder -->
+                        <div id="results-placeholder" class="results-placeholder">
+                            <i class="fa-solid fa-receipt placeholder-icon"></i>
+                            <h3>Awaiting Lesion Input</h3>
+                            <p>Upload a skin lesion image or start the live camera to trigger the Traditional Machine Learning diagnosis sequence.</p>
+                            
+                            <!-- Model Details Box -->
+                            <div class="quick-stats-box">
+                                <h4>Model Calibration Details</h4>
+                                <div class="stats-row">
+                                    <div class="stat-item">
+                                        <span class="stat-label">Model Classifier</span>
+                                        <span class="stat-val">Random Forest</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Feature Pipeline</span>
+                                        <span class="stat-val">HSV + GLCM + Contours</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">Cross-Val Accuracy</span>
+                                        <span class="stat-val">{{ model_accuracy }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loading Indicator -->
+                        <div id="loading-indicator" class="loading-indicator" style="display: none;">
+                            <div class="loader-spinner"></div>
+                            <h3>Running Diagnostic Sequence</h3>
+                            <p id="loading-msg">Extracting features and evaluating Random Forest estimators...</p>
+                        </div>
+
+                        <!-- Results Content -->
+                        <div id="results-content" class="results-content" style="display: none;">
+                            <!-- Header Status Alert -->
+                            <div class="alert-box" id="result-alert-box">
+                                <i class="fa-solid fa-circle-exclamation alert-icon" id="result-alert-icon"></i>
+                                <span class="alert-title" id="result-status-title">Cancer Detected</span>
+                            </div>
+
+                            <!-- Diagnosis Info Grid -->
+                            <div class="diagnosis-grid">
+                                <!-- Text Data -->
+                                <div class="diagnosis-details">
+                                    <div class="detail-row">
+                                        <span class="label">Predicted Class:</span>
+                                        <span class="val highlighted" id="result-class">Melanoma</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Risk Index:</span>
+                                        <span class="val badge" id="result-risk">High</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Confidence Level:</span>
+                                        <span class="val" id="result-confidence-text">89.4%</span>
+                                    </div>
+                                </div>
+
+                                <!-- Circular Confidence Gauge -->
+                                <div class="gauge-container">
+                                    <svg class="gauge-svg" viewBox="0 0 100 100">
+                                        <circle class="gauge-track" cx="50" cy="50" r="40"></circle>
+                                        <circle class="gauge-fill" id="gauge-fill-circle" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                                    </svg>
+                                    <div class="gauge-value" id="gauge-value-text">0%</div>
+                                </div>
+                            </div>
+
+                            <!-- Recommendation Box -->
+                            <div class="recommendation-card">
+                                <h4>Clinical Recommendation & Analysis</h4>
+                                <p id="result-recommendation">Clinical text here.</p>
+                                <span class="disclaimer-text">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> 
+                                    Disclaimer: This machine learning tool is for educational and screening assistance. It does not replace a professional medical diagnosis.
+                                </span>
+                            </div>
+
+                            <!-- Feature Breakdown Tab -->
+                            <div class="features-dropdown">
+                                <button class="features-toggle-btn" onclick="toggleFeaturesDropdown()">
+                                    <span><i class="fa-solid fa-dna"></i> Extracted Feature Vector</span>
+                                    <i class="fa-solid fa-chevron-down arrow-icon" id="features-arrow"></i>
+                                </button>
+                                <div class="features-dropdown-content" id="features-table-container">
+                                    <table class="features-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Feature Group</th>
+                                                <th>Descriptor Name</th>
+                                                <th>Normalized Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="features-table-body">
+                                            <!-- Dynamically populated -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <!-- TAB 2 REMOVED -->
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer glass-panel">
+            <p>&copy; 2026 Skin Lesion Intelligent Analytics System. Built using Traditional Machine Learning and Random Forest Classifier.</p>
+        </footer>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

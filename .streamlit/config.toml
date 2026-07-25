@@ -1,0 +1,11 @@
+[server]
+# Allow camera to work on localhost (HTTP)
+enableCORS = false
+enableXsrfProtection = false
+headless = true
+
+[browser]
+# Disable usage stats collection
+gatherUsageStats = false
+serverAddress = "localhost"
+serverPort = 8501
